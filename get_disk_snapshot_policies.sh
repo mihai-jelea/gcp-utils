@@ -34,7 +34,7 @@ for project in $projects; do
 
     # Remove duplicates and print the unique zone names
     zones=$(echo ${used_zones[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')
-    echo " -> Used Zones: $zones"
+    echo " -> Found zonal disks in: $zones"
 
     # Iterate through each zone
     for zone in $zones; do
@@ -69,6 +69,9 @@ for project in $projects; do
                     retention_days=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region "$region" --format="value(snapshotSchedulePolicy.retentionPolicy.maxRetentionDays)")
                 else
                     snapshot_schedule="no"
+                    frequency=""
+                    storage_location=""
+                    retention_days=""
                 fi
 
                 # Append the project, zone, and disk details to the CSV file
@@ -93,7 +96,7 @@ for project in $projects; do
 
     # Remove duplicates and print the unique zone names
     regions=$(echo ${used_regions[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')
-    echo " -> Used Regions: $regions"
+    echo " -> Found regional disks in: $regions"
 
     # Iterate through each zone
     for region in $regions; do
@@ -127,6 +130,9 @@ for project in $projects; do
                     retention_days=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region "$region" --format="value(snapshotSchedulePolicy.retentionPolicy.maxRetentionDays)")
                 else
                     snapshot_schedule="no"
+                    frequency=""
+                    storage_location=""
+                    retention_days=""
                 fi
 
                 # Append the project, zone, and disk details to the CSV file

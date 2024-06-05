@@ -11,8 +11,7 @@ output_file="gce_disks_with_snapshot_schedule.csv"
 echo "project,disk_name,used_by_vm,region_zone,disk_type,kind,disk_size_gb,status,snapshot_enabled,frequency,storage_location,retention_days" >$output_file
 
 # Fetch all projects
-#projects=$(gcloud projects list --format="value(projectId)")
-projects="mihai-demo"
+projects=$(gcloud projects list --format="value(projectId)")
 
 # Iterate through each project
 for project in $projects; do

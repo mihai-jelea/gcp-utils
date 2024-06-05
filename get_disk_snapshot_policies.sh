@@ -7,6 +7,9 @@
 # Define the name of the output CSV file
 output_file="gce_disks_with_snapshot_schedule.csv"
 
+# Disable prompts and default to no in case some APIs are not enabled
+gcloud config set core/disable_prompts true
+
 # Write the header to the CSV file
 echo "project,disk_name,used_by_vm,region_zone,disk_type,kind,disk_size_gb,status,snapshot_enabled,frequency,storage_location,retention_days" >$output_file
 
@@ -23,7 +26,7 @@ for project in $projects; do
     used_zones=()
 
     # Fetch zones for deployed Compute Engine disks
-    zone_list=$(gcloud compute disks list --project="$project" --format="value(zone)")
+    zone_list=$(gcloud compute disks list --project="$project" --format="value(zone)" --verbosity="none")
 
     # Extract zone names
     for zone in $zone_list; do
@@ -53,19 +56,19 @@ for project in $projects; do
                 if [ -n "$resource_policy" ]; then
                     snapshot_schedule="yes"
                     region=$(echo $zone | sed 's/-[a-z]$//')
-                    schedule=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region="$region" --format="value(snapshotSchedulePolicy.schedule.dailySchedule)")
+                    schedule=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --project=$project --region="$region" --format="value(snapshotSchedulePolicy.schedule.dailySchedule)")
                     if [ -n "$schedule" ]; then
                         frequency="daily"
                     else
-                        schedule=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region="$region" --format="value(snapshotSchedulePolicy.schedule.weeklySchedule)")
+                        schedule=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --project=$project --region="$region" --format="value(snapshotSchedulePolicy.schedule.weeklySchedule)")
                         if [ -n "$schedule" ]; then
                             frequency="weekly"
                         else
                             frequency="hourly"
                         fi
                     fi
-                    storage_location=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region "$region" --format="value(snapshotSchedulePolicy.snapshotProperties.storageLocations)")
-                    retention_days=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region "$region" --format="value(snapshotSchedulePolicy.retentionPolicy.maxRetentionDays)")
+                    storage_location=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --project=$project --region "$region" --format="value(snapshotSchedulePolicy.snapshotProperties.storageLocations)")
+                    retention_days=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --project=$project --region "$region" --format="value(snapshotSchedulePolicy.retentionPolicy.maxRetentionDays)")
                 else
                     snapshot_schedule="no"
                     frequency=""
@@ -74,7 +77,7 @@ for project in $projects; do
                 fi
 
                 # Get the name of the VM that uses this disk
-                vm_name=$(gcloud compute instances list --filter="disks.deviceName=($name)" --format="value(name)" --verbosity="error")
+                vm_name=$(gcloud compute instances list --filter="disks.deviceName=($name)" --project=$project --format="value(name)" --verbosity="error")
 
                 # Append the project, zone, and disk details to the CSV file
                 echo "$project,$name,$vm_name,$zone,$type,$kind,$size,$status,$snapshot_schedule,$frequency,$storage_location,$retention_days" >>$output_file
@@ -117,19 +120,19 @@ for project in $projects; do
                 # Determine if a snapshot schedule exists
                 if [ -n "$resource_policy" ]; then
                     snapshot_schedule="yes"
-                    schedule=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region="$region" --format="value(snapshotSchedulePolicy.schedule.dailySchedule)")
+                    schedule=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --project=$project --region="$region" --format="value(snapshotSchedulePolicy.schedule.dailySchedule)")
                     if [ -n "$schedule" ]; then
                         frequency="daily"
                     else
-                        schedule=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region="$region" --format="value(snapshotSchedulePolicy.schedule.weeklySchedule)")
+                        schedule=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --project=$project --region="$region" --format="value(snapshotSchedulePolicy.schedule.weeklySchedule)")
                         if [ -n "$schedule" ]; then
                             frequency="weekly"
                         else
                             frequency="hourly"
                         fi
                     fi
-                    storage_location=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region "$region" --format="value(snapshotSchedulePolicy.snapshotProperties.storageLocations)")
-                    retention_days=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --region "$region" --format="value(snapshotSchedulePolicy.retentionPolicy.maxRetentionDays)")
+                    storage_location=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --project=$project --region "$region" --format="value(snapshotSchedulePolicy.snapshotProperties.storageLocations)")
+                    retention_days=$(gcloud compute resource-policies describe "$(basename "$resource_policy")" --project=$project --region "$region" --format="value(snapshotSchedulePolicy.retentionPolicy.maxRetentionDays)")
                 else
                     snapshot_schedule="no"
                     frequency=""
@@ -138,7 +141,7 @@ for project in $projects; do
                 fi
 
                 # Get the name of the VM that uses this disk
-                vm_name=$(gcloud compute instances list --filter="disks.deviceName=($name)" --format="value(name)" --verbosity="error")
+                vm_name=$(gcloud compute instances list --filter="disks.deviceName=($name)" --project=$project --format="value(name)" --verbosity="error")
 
                 # Append the project, zone, and disk details to the CSV file
                 echo "$project,$name,$vm_name,$zone,$type,$kind,$size,$status,$snapshot_schedule,$frequency,$storage_location,$retention_days" >>$output_file

@@ -8,7 +8,7 @@
 output_file="gce_disks_with_snapshot_schedule.csv"
 
 # Write the header to the CSV file
-echo "project,disk_name,region_zone,disk_type,kind,disk_size_gb,status,snapshot_enabled,frequency,storage_location,retention_days" >$output_file
+echo "project,disk_name,used_by_vm,region_zone,disk_type,kind,disk_size_gb,status,snapshot_enabled,frequency,storage_location,retention_days" >$output_file
 
 # Fetch all projects
 #projects=$(gcloud projects list --format="value(projectId)")
@@ -74,8 +74,11 @@ for project in $projects; do
                     retention_days=""
                 fi
 
+                # Get the name of the VM that uses this disk
+                vm_name=$(gcloud compute instances list --filter="disks.deviceName=($name)" --format="value(name)" --verbosity="error")
+
                 # Append the project, zone, and disk details to the CSV file
-                echo "$project,$name,$zone,$type,$kind,$size,$status,$snapshot_schedule,$frequency,$storage_location,$retention_days" >>$output_file
+                echo "$project,$name,$vm_name,$zone,$type,$kind,$size,$status,$snapshot_schedule,$frequency,$storage_location,$retention_days" >>$output_file
             done <<<"$disks"
         fi
     done
@@ -135,8 +138,11 @@ for project in $projects; do
                     retention_days=""
                 fi
 
+                # Get the name of the VM that uses this disk
+                vm_name=$(gcloud compute instances list --filter="disks.deviceName=($name)" --format="value(name)" --verbosity="error")
+
                 # Append the project, zone, and disk details to the CSV file
-                echo "$project,$name,$region,$type,$kind,$size,$status,$snapshot_schedule,$frequency,$storage_location,$retention_days" >>$output_file
+                echo "$project,$name,$vm_name,$zone,$type,$kind,$size,$status,$snapshot_schedule,$frequency,$storage_location,$retention_days" >>$output_file
             done <<<"$disks"
         fi
     done

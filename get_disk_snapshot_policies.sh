@@ -33,10 +33,10 @@ for project in $projects; do
 
     # Remove duplicates and print the unique zone names
     zones=$(echo ${used_zones[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')
-    echo " -> Found zonal disks in: $zones"
 
     # Iterate through each zone
     for zone in $zones; do
+        echo " -> Found zonal disks in: $zones"
         echo " --> Checking zone: $zone"
 
         # List all disks in the current zone
@@ -98,10 +98,10 @@ for project in $projects; do
 
     # Remove duplicates and print the unique zone names
     regions=$(echo ${used_regions[@]} | tr ' ' '\n' | sort -u | tr '\n' ' ')
-    echo " -> Found regional disks in: $regions"
 
     # Iterate through each zone
     for region in $regions; do
+        echo " -> Found regional disks in: $regions"
         echo " --> Checking region: $region"
 
         # List all disks in the current zone
